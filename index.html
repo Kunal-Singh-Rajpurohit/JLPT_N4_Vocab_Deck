@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>店舗MGR 事前学習フラッシュカード</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .container {
+            width: 90%;
+            max-width: 400px;
+            perspective: 1000px;
+        }
+        .card {
+            width: 100%;
+            height: 420px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease-in-out;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-radius: 20px;
+        }
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            box-sizing: border-box;
+            border-radius: 20px;
+            background: var(--card-bg);
+            text-align: center;
+        }
+        .card-face-back {
+            transform: rotateY(180deg);
+            text-align: left;
+            justify-content: flex-start;
+            overflow-y: auto;
+            background: #f1f5f9;
+        }
+        .term {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        .en-term {
+            font-size: 1.1rem;
+            color: #64748b;
+        }
+        .definition {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text);
+            margin-top: 10px;
+            width: 100%;
+        }
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            touch-action: manipulation;
+        }
+        button:active {
+            background: #1d4ed8;
+        }
+        .progress {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+        .hint {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 20px;
+        }
+
+        /* --- Editing and Adding UI --- */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+            cursor: pointer;
+            z-index: 100;
+            padding: 0;
+        }
+        textarea.edit-box {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 10px;
+            border: 2px solid #cbd5e1;
+            font-family: inherit;
+            resize: none;
+            display: none;
+            margin-top: 10px;
+        }
+        .action-btns {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            background: #e2e8f0;
+            color: #334155;
+        }
+        .btn-save-edit {
+            background: #10b981; 
+            display: none;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+        .modal {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            width: 85%;
+            max-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .modal h3 {
+            margin: 0 0 10px 0;
+            color: var(--primary);
+        }
+        .modal input, .modal textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        .modal textarea {
+            height: 100px;
+            resize: none;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .modal-actions button.btn-cancel {
+            background: #e2e8f0;
+            color: #334155;
+        }
+        .modal-actions button.btn-confirm {
+            background: #10b981;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="progress" id="progress">1 / 19</div>
+
+    <div class="container" id="swipe-container">
+        <div class="card" id="card">
+            <div class="card-face card-face-front">
+                <div class="term" id="term-ja">Loading...</div>
+                <div class="en-term" id="term-en"></div>
+                <div class="hint">Tap to flip</div>
+            </div>
+            
+            <div class="card-face card-face-back">
+                <div class="definition" id="definition">Loading...</div>
+                <textarea class="edit-box" id="edit-box"></textarea>
+                
+                <div class="action-btns">
+                    <button class="btn-small" id="btn-edit">Edit Meaning</button>
+                    <button class="btn-small btn-save-edit" id="btn-save-edit">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="btn-prev">Prev</button>
+        <button id="btn-next">Next</button>
+    </div>
+
+    <button class="fab" id="btn-add-card">+</button>
+
+    <div class="modal-overlay" id="add-modal">
+        <div class="modal">
+            <h3>Add New Flashcard</h3>
+            <input type="text" id="new-ja" placeholder="Term (e.g. 欠品)">
+            <input type="text" id="new-en" placeholder="Sub-term / English (Optional)">
+            <textarea id="new-def" placeholder="Enter the meaning here..."></textarea>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="btn-cancel-add">Cancel</button>
+                <button class="btn-confirm" id="btn-confirm-add">Save Card</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            const defaultData = [
+                { term: "① 売れ筋", en: "fast-selling item", def: "特に際立って販売量の多い商品で、在庫数量が適正な状態の商品。販売数（または売上金額）ABC分析をした際に上位10〜15%に属する商品。ただし、その条件を満たしていても在庫が過剰で商品回転日数が長すぎる場合は「死に筋」とみなすべきである。" },
+                { term: "② オペレーション", en: "operation", def: "事業活動に必要な、日常的に繰り返される定型業務の総称。および、それを実行していくこと。対義語はプロジェクト。" },
+                { term: "③ チームワーク", en: "team work", def: "一人ひとりが、自分に期待された役割と行動を理解し活躍できる状態。チームワークは、分業体制のあるべき形である。よき協力関係とか、和気あいあいの雰囲気というように理解するのはまちがっている。" },
+                { term: "④ クリンリネス", en: "cleanliness", def: "売場や商品提供場所が無駄なものがなく、スッキリしている状態（tidy）。衛生的な清潔さを指すcleannessとは異なる。" },
+                { term: "⑤ 欠品", en: "out of stock", def: "それを求めている客が買えない状態。状況により10種ある（在庫があるが買いやすい状態でない、陳列場所にない、売場自体にない、店に在庫がない、店の棚割りにない、商品マスタ未登録、出荷拠点にない、取引先にもない、市場にない、世界中どこにもない）。" },
+                { term: "⑥ 品切れ", en: "out of stock", def: "発見された、または既知の欠品。" },
+                { term: "⑦ 商圏", en: "trading area", def: "その店の来店客の大半が居住する地域。" },
+                { term: "⑧ ドミナントエリア", en: "dominant area", def: "その企業がすでに寡占化（65%超）している商圏。新しい商勢圏づくりの原資は、ここで稼ぐ利益から生まれる。他社の侵攻から利益源を守るための防衛対策と、自社の必要商圏人口を把握した計画的な出店立地が必要。" },
+                { term: "⑨ 標準化", en: "standardization", def: "いつでも、どこでも、誰がやっても、ベストな状態を維持すること。言い換えると、ミスや逸脱がない状態をつくること。単純化と徹底化（専門化）と合わせてサンエヌ主義と呼ぶ。" },
+                { term: "⑩ 単純化", en: "simplification", def: "悩んだり、尋ねたり、探したり、話し合ったりせずにできること。たった一つのことに専念できること。" },
+                { term: "⑪ 徹底化", en: "specialization", def: "一つのことに専念することで、同じことでも他とは全く違う成果を生み出し、圧倒的に抜きん出た存在になること。卓越すること。専門化ともいう。" },
+                { term: "⑫ 命令", en: "order", def: "上司が部下一人ひとりに、職務を理解させること。" },
+                { term: "⑬ 分業", en: "division of labor", def: "一人ひとりの役割が明確で、確実に果たされる状態。同じ任務を分担することではない。" },
+                { term: "⑭ フェイス", en: "face", def: "商品の表面のことを、フェイス（顔）という。" },
+                { term: "⑮ フェイシング", en: "facing", def: "陳列台に横に並べた際の、商品のフェイスの総数。" },
+                { term: "⑯ 最低陳列量", en: "minimum display quantity", def: "一般的には、自社でたまたま決めている発注点（追加発注する在庫水準）を指す。" },
+                { term: "⑰ マニュアル", en: "manual", def: "職務を完全に表現した文書。" },
+                { term: "⑱ ワークスケジューリング", en: "work scheduling", def: "作業マネジャーが計画を立て、部下の職務遂行能力に応じて作業種類ごとの命令を出すこと。" },
+                { term: "⑲ ローコストオペレーション", en: "low-cost operation", def: "低コストで営業活動をするしくみ。" }
+            ];
+
+            let savedData = localStorage.getItem('my_flashcards');
+            let data = savedData ? JSON.parse(savedData) : defaultData;
+            let currentIndex = 0;
+            
+            const card = document.getElementById('card');
+            const termJa = document.getElementById('term-ja');
+            const termEn = document.getElementById('term-en');
+            const definition = document.getElementById('definition');
+            const progress = document.getElementById('progress');
+            
+            const editBox = document.getElementById('edit-box');
+            const btnEdit = document.getElementById('btn-edit');
+            const btnSaveEdit = document.getElementById('btn-save-edit');
+            
+            const modal = document.getElementById('add-modal');
+            const btnAddCard = document.getElementById('btn-add-card');
+            const btnCancelAdd = document.getElementById('btn-cancel-add');
+            const btnConfirmAdd = document.getElementById('btn-confirm-add');
+
+            function saveToStorage() {
+                localStorage.setItem('my_flashcards', JSON.stringify(data));
+            }
+
+            function updateCard() {
+                card.classList.remove('is-flipped');
+                
+                definition.style.display = 'block';
+                editBox.style.display = 'none';
+                btnEdit.style.display = 'block';
+                btnSaveEdit.style.display = 'none';
+
+                setTimeout(() => {
+                    termJa.textContent = data[currentIndex].term;
+                    termEn.textContent = data[currentIndex].en;
+                    definition.textContent = data[currentIndex].def;
+                    progress.textContent = `${currentIndex + 1} / ${data.length}`;
+                }, 200); 
+            }
+
+            card.addEventListener('click', (e) => {
+                if (e.target.tagName.toLowerCase() === 'button' || e.target.tagName.toLowerCase() === 'textarea') {
+                    return;
+                }
+                card.classList.toggle('is-flipped');
+            });
+
+            document.getElementById('btn-next').addEventListener('click', () => {
+                currentIndex = (currentIndex + 1) % data.length;
+                updateCard();
+            });
+
+            document.getElementById('btn-prev').addEventListener('click', () => {
+                currentIndex = (currentIndex - 1 + data.length) % data.length;
+                updateCard();
+            });
+
+            btnEdit.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                definition.style.display = 'none';
+                editBox.style.display = 'block';
+                editBox.value = data[currentIndex].def;
+                
+                btnEdit.style.display = 'none';
+                btnSaveEdit.style.display = 'block';
+                editBox.focus();
+            });
+
+            btnSaveEdit.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                data[currentIndex].def = editBox.value; 
+                saveToStorage(); 
+                
+                definition.textContent = data[currentIndex].def;
+                definition.style.display = 'block';
+                editBox.style.display = 'none';
+                btnEdit.style.display = 'block';
+                btnSaveEdit.style.display = 'none';
+            });
+
+            editBox.addEventListener('click', (e) => e.stopPropagation());
+
+            btnAddCard.addEventListener('click', () => {
+                modal.style.display = 'flex';
+            });
+
+            btnCancelAdd.addEventListener('click', () => {
+                modal.style.display = 'none';
+                document.getElementById('new-ja').value = '';
+                document.getElementById('new-en').value = '';
+                document.getElementById('new-def').value = '';
+            });
+
+            btnConfirmAdd.addEventListener('click', () => {
+                const ja = document.getElementById('new-ja').value.trim();
+                const en = document.getElementById('new-en').value.trim();
+                const def = document.getElementById('new-def').value.trim();
+
+                if (ja && def) {
+                    data.push({ term: ja, en: en, def: def });
+                    saveToStorage();
+                    currentIndex = data.length - 1;
+                    updateCard();
+                    btnCancelAdd.click();
+                } else {
+                    alert("Please enter at least a Term and a Meaning!");
+                }
+            });
+
+            modal.addEventListener('touchstart', (e) => e.stopPropagation(), {passive: true});
+            modal.addEventListener('touchend', (e) => e.stopPropagation(), {passive: true});
+
+            let touchStartX = 0;
+            let touchEndX = 0;
+            const swipeContainer = document.getElementById('swipe-container');
+
+            swipeContainer.addEventListener('touchstart', e => {
+                if(e.target.tagName.toLowerCase() === 'textarea') return;
+                touchStartX = e.changedTouches[0].screenX;
+            }, {passive: true});
+
+            swipeContainer.addEventListener('touchend', e => {
+                if(e.target.tagName.toLowerCase() === 'textarea') return;
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, {passive: true});
+
+            function handleSwipe() {
+                const threshold = 50; 
+                if (touchStartX - touchEndX > threshold) {
+                    document.getElementById('btn-next').click();
+                }
+                if (touchEndX - touchStartX > threshold) {
+                    document.getElementById('btn-prev').click();
+                }
+            }
+
+            updateCard();
+        });
+    </script>
+</body>
+</html>
