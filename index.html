@@ -359,7 +359,7 @@
                 { pat: "〜たり〜たりする", exp: "Used to list multiple actions.", ex1jp: "本を読んだり、手紙を書いたりします。", ex1en: "I read books, write letters, etc.", ex2jp: "買い物をしたり、会ったりします。", ex2en: "I shop, meet (people), etc.", ex3jp: "食べたり飲んだりしました。", ex3en: "We ate, drank, etc.", ex4jp: "見たり聞いたりします。", ex4en: "I watch, listen, etc.", ex5jp: "泣いたり笑ったりしました。", ex5en: "We cried, laughed, etc." }
             ];
 
-            let savedData = localStorage.getItem('jlpt_n5_flashcards_v5ex');
+let savedData = localStorage.getItem('jlpt_n5_flashcards_v2');
             let data = savedData ? JSON.parse(savedData) : defaultData;
             let currentIndex = 0;
             
@@ -368,18 +368,188 @@
             const explanation = document.getElementById('explanation');
             
             const examplesDisplay = document.getElementById('examples-display');
-            const ex1jp = document.getElementById('ex1-jp'), ex1en = document.getElementById('ex1-en');
-            const ex2jp = document.getElementById('ex2-jp'), ex2en = document.getElementById('ex2-en');
-            const ex3jp = document.getElementById('ex3-jp'), ex3en = document.getElementById('ex3-en');
-            const ex4jp = document.getElementById('ex4-jp'), ex4en = document.getElementById('ex4-en');
-            const ex5jp = document.getElementById('ex5-jp'), ex5en = document.getElementById('ex5-en');
+            const ex1jp = document.getElementById('ex1-jp');
+            const ex1en = document.getElementById('ex1-en');
+            const ex2jp = document.getElementById('ex2-jp');
+            const ex2en = document.getElementById('ex2-en');
+            const ex3jp = document.getElementById('ex3-jp');
+            const ex3en = document.getElementById('ex3-en');
             const progress = document.getElementById('progress');
             
             const editFields = document.getElementById('edit-fields');
-            const editEx1Jp = document.getElementById('edit-ex1-jp'), editEx1En = document.getElementById('edit-ex1-en');
-            const editEx2Jp = document.getElementById('edit-ex2-jp'), editEx2En = document.getElementById('edit-ex2-en');
-            const editEx3Jp = document.getElementById('edit-ex3-jp'), editEx3En = document.getElementById('edit-ex3-en');
-            const editEx4Jp = document.getElementById('edit-ex4-jp'), editEx4En = document.getElementById('edit-ex4-en');
-            const editEx5Jp = document.getElementById('edit-ex5-jp'), editEx5En = document.getElementById('edit-ex5-en');
+            const editEx1Jp = document.getElementById('edit-ex1-jp');
+            const editEx1En = document.getElementById('edit-ex1-en');
+            const editEx2Jp = document.getElementById('edit-ex2-jp');
+            const editEx2En = document.getElementById('edit-ex2-en');
+            const editEx3Jp = document.getElementById('edit-ex3-jp');
+            const editEx3En = document.getElementById('edit-ex3-en');
 
-            const btnEdit = document.getElementById('btn-edit
+            const btnEdit = document.getElementById('btn-edit');
+            const btnSaveEdit = document.getElementById('btn-save-edit');
+            
+            const modal = document.getElementById('add-modal');
+            const btnAddCard = document.getElementById('btn-add-card');
+            const btnCancelAdd = document.getElementById('btn-cancel-add');
+            const btnConfirmAdd = document.getElementById('btn-confirm-add');
+
+            function saveToStorage() {
+                localStorage.setItem('jlpt_n5_flashcards_v2', JSON.stringify(data));
+            }
+
+            function updateCard() {
+                card.classList.remove('is-flipped');
+                
+                examplesDisplay.style.display = 'block';
+                editFields.style.display = 'none';
+                btnEdit.style.display = 'block';
+                btnSaveEdit.style.display = 'none';
+
+                setTimeout(() => {
+                    patternName.textContent = data[currentIndex].pat;
+                    explanation.textContent = data[currentIndex].exp;
+                    
+                    ex1jp.textContent = data[currentIndex].ex1jp;
+                    ex1en.textContent = data[currentIndex].ex1en;
+                    ex2jp.textContent = data[currentIndex].ex2jp;
+                    ex2en.textContent = data[currentIndex].ex2en;
+                    ex3jp.textContent = data[currentIndex].ex3jp;
+                    ex3en.textContent = data[currentIndex].ex3en;
+                    
+                    progress.textContent = `${currentIndex + 1} / ${data.length}`;
+                }, 200); 
+            }
+
+            card.addEventListener('click', (e) => {
+                if (e.target.tagName.toLowerCase() === 'button' || e.target.tagName.toLowerCase() === 'textarea') {
+                    return;
+                }
+                card.classList.toggle('is-flipped');
+            });
+
+            document.getElementById('btn-next').addEventListener('click', () => {
+                currentIndex = (currentIndex + 1) % data.length;
+                updateCard();
+            });
+
+            document.getElementById('btn-prev').addEventListener('click', () => {
+                currentIndex = (currentIndex - 1 + data.length) % data.length;
+                updateCard();
+            });
+
+            btnEdit.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                examplesDisplay.style.display = 'none';
+                editFields.style.display = 'flex';
+                
+                editEx1Jp.value = data[currentIndex].ex1jp;
+                editEx1En.value = data[currentIndex].ex1en;
+                editEx2Jp.value = data[currentIndex].ex2jp;
+                editEx2En.value = data[currentIndex].ex2en;
+                editEx3Jp.value = data[currentIndex].ex3jp;
+                editEx3En.value = data[currentIndex].ex3en;
+                
+                btnEdit.style.display = 'none';
+                btnSaveEdit.style.display = 'block';
+            });
+
+            btnSaveEdit.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                data[currentIndex].ex1jp = editEx1Jp.value; 
+                data[currentIndex].ex1en = editEx1En.value; 
+                data[currentIndex].ex2jp = editEx2Jp.value; 
+                data[currentIndex].ex2en = editEx2En.value; 
+                data[currentIndex].ex3jp = editEx3Jp.value; 
+                data[currentIndex].ex3en = editEx3En.value; 
+                saveToStorage(); 
+                
+                ex1jp.textContent = data[currentIndex].ex1jp;
+                ex1en.textContent = data[currentIndex].ex1en;
+                ex2jp.textContent = data[currentIndex].ex2jp;
+                ex2en.textContent = data[currentIndex].ex2en;
+                ex3jp.textContent = data[currentIndex].ex3jp;
+                ex3en.textContent = data[currentIndex].ex3en;
+                
+                examplesDisplay.style.display = 'block';
+                editFields.style.display = 'none';
+                btnEdit.style.display = 'block';
+                btnSaveEdit.style.display = 'none';
+            });
+
+            btnAddCard.addEventListener('click', () => {
+                modal.style.display = 'flex';
+            });
+
+            btnCancelAdd.addEventListener('click', () => {
+                modal.style.display = 'none';
+                document.getElementById('new-pattern').value = '';
+                document.getElementById('new-explanation').value = '';
+                document.getElementById('new-ex1').value = '';
+                document.getElementById('new-ex2').value = '';
+                document.getElementById('new-ex3').value = '';
+            });
+
+            btnConfirmAdd.addEventListener('click', () => {
+                const pat = document.getElementById('new-pattern').value.trim();
+                const exp = document.getElementById('new-explanation').value.trim();
+                const ex1Raw = document.getElementById('new-ex1').value.trim();
+                const ex2Raw = document.getElementById('new-ex2').value.trim();
+                const ex3Raw = document.getElementById('new-ex3').value.trim();
+
+                if (pat && exp) {
+                    const ex1Split = ex1Raw.split('-');
+                    const ex2Split = ex2Raw.split('-');
+                    const ex3Split = ex3Raw.split('-');
+
+                    data.push({ 
+                        pat: pat, 
+                        exp: exp, 
+                        ex1jp: ex1Split[0] ? ex1Split[0].trim() : "", 
+                        ex1en: ex1Split[1] ? ex1Split[1].trim() : "",
+                        ex2jp: ex2Split[0] ? ex2Split[0].trim() : "", 
+                        ex2en: ex2Split[1] ? ex2Split[1].trim() : "",
+                        ex3jp: ex3Split[0] ? ex3Split[0].trim() : "", 
+                        ex3en: ex3Split[1] ? ex3Split[1].trim() : "" 
+                    });
+                    
+                    saveToStorage();
+                    currentIndex = data.length - 1;
+                    updateCard();
+                    btnCancelAdd.click();
+                } else {
+                    alert("Please enter at least a Pattern and an Explanation!");
+                }
+            });
+
+            modal.addEventListener('touchstart', (e) => e.stopPropagation(), {passive: true});
+            modal.addEventListener('touchend', (e) => e.stopPropagation(), {passive: true});
+
+            let touchStartX = 0;
+            let touchEndX = 0;
+            const swipeContainer = document.getElementById('swipe-container');
+
+            swipeContainer.addEventListener('touchstart', e => {
+                if(e.target.tagName.toLowerCase() === 'textarea') return;
+                touchStartX = e.changedTouches[0].screenX;
+            }, {passive: true});
+
+            swipeContainer.addEventListener('touchend', e => {
+                if(e.target.tagName.toLowerCase() === 'textarea') return;
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, {passive: true});
+
+            function handleSwipe() {
+                const threshold = 50; 
+                if (touchStartX - touchEndX > threshold) {
+                    document.getElementById('btn-next').click();
+                }
+                if (touchEndX - touchStartX > threshold) {
+                    document.getElementById('btn-prev').click();
+                }
+            }
+
+            updateCard();
+        });
+    </script>
+</body>
+</html>
